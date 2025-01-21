@@ -5,9 +5,12 @@ import {
     PSEUDO_SELECTOR,
     CUSTOM_SIDEBAR_CSS_VARIABLES,
     HA_CSS_VARIABLES,
-    BLOCKED_PROPERTY
+    BLOCKED_PROPERTY,
+    CLASS
 } from '@constants';
 import { getCSSVariables } from '@utilities';
+
+export const SIDEBAR_EXPAND_ANIMATION_TIME_MS = 500;
 
 const NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR = {
     backgroundColor: getCSSVariables(
@@ -28,16 +31,22 @@ const NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR = {
 };
 
 export const FUNCTIONALITY = {
+    [`${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ ELEMENT.PAPER_ICON_ITEM }`]: {
+        width: 'calc(var(--app-drawer-width, 248px) - var(--custom-sidebar-child-indent-size, 24px)) !important'
+    },
+    [`${ SELECTOR.SIDEBAR_LIST_CHILDREN } .${ CLASS.SIDEBAR_LIST } ${ ELEMENT.PAPER_ICON_ITEM }`]: {
+        width: 'calc(var(--app-drawer-width, 248px) - var(--custom-sidebar-child-indent-size, 24px)) - var(--custom-sidebar-child-indent-size, 24px)) !important'
+    },
     [`${ SELECTOR.HOST } ${ SELECTOR.ITEM }[${ ATTRIBUTE.WITH_NOTIFICATION }] > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
         maxWidth: 'calc(100% - 100px)'
     },
-    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX } > ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
+    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX }  ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
         display: 'flex',
         flexDirection: 'column',
         gap: '5px',
         lineHeight: '1'
     },
-    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX } > ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }${ PSEUDO_SELECTOR.AFTER }`]: {
+    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX }  ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }${ PSEUDO_SELECTOR.AFTER }`]: {
         content: 'attr(data-info)',
         display: 'none',
         fontSize: '11px',
@@ -46,13 +55,13 @@ export const FUNCTIONALITY = {
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap'
     },
-    [`{ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX } > ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED }`]: {
+    [`{ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX }  ${ SELECTOR.ITEM } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED }`]: {
         opacity: '0'
     },
-    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX } > ${ SELECTOR.ITEM }${ SELECTOR.ITEM_SELECTED } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
+    [`${ SELECTOR.HOST_EXPANDED } ${ ELEMENT.PAPER_LISTBOX } ${ SELECTOR.ITEM }${ SELECTOR.ITEM_SELECTED } > ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
         zIndex: '1'
     },
-    [`${ SELECTOR.HOST } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
+    [`${ SELECTOR.HOST } ${ ELEMENT.PAPER_ICON_ITEM } ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
         left: 'calc(var(--app-drawer-width, 248px) - 22px)',
         maxWidth: '80px',
         transform: 'translateX(-100%)',
@@ -64,10 +73,38 @@ export const FUNCTIONALITY = {
         maxWidth: '20px',
         ...NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR
     },
+    [`${ SELECTOR.HOST } ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
+        left: 'calc(var(--app-drawer-width, 248px) - 22px - var(--custom-sidebar-child-indent-size, 24px))',
+    },
+    [`${ SELECTOR.HOST } ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
+        left: 'calc(var(--app-drawer-width, 248px) - 22px - (2*var(--custom-sidebar-child-indent-size, 24px)))',
+    },
     [`${ SELECTOR.HOST } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.CONFIGURATION_BADGE }`]: {
         ...NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR
+    },
+    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }`]: {
+        'transition': `max-height ${ SIDEBAR_EXPAND_ANIMATION_TIME_MS }ms ease-in-out`,
+        'overflow': 'hidden',
+        
+       // '--paper-item-icon-width':  'calc(56px - var(--custom-sidebar-child-indent-size, 24px))'
+    },
+    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
+        'max-width': 'calc(100% - var(--paper-item-icon-width) -  var(--custom-sidebar-child-indent-size, 24px))'
+    },
+    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.CONFIGURATION_BADGE }`]: {
+        "inset-inline-start": "calc(var(--app-drawer-width,248px) - 42px - var(--custom-sidebar-child-indent-size, 24px))"
+    },
+    [`${ SELECTOR.HOST } .${ CLASS.SIDEBAR_LIST } .${ CLASS.SIDEBAR_LIST_COLLAPSE_ICON }`]: {
+        '--mdc-icon-size': '32px',
+        'position': 'absolute',
+        'right': '8px',
     }
+    // [`${ SELECTOR.HOST } ${ SELECTOR.LIST_COLLAPSIBLE_PARENT}`]: {
+    //     'padding': '0',
+    //     'border': 'none'
+    // }
 };
+
 
 export const TITLE_COLOR = {
     [`${ SELECTOR.HOST } ${ SELECTOR.MENU } > ${ SELECTOR.TITLE }`]: {
@@ -322,4 +359,15 @@ export const NOTIFICATION_COLOR_HOVER_NOTIFICATION_TEXT_COLOR_HOVER = {
             HA_CSS_VARIABLES.TEXT_PRIMARY_COLOR
         )
     }
+};
+
+export const LIST_CHILDREN_STYLES = {
+    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }`]: {
+        'background': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND, 'inherit'),
+        'color': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR, 'inherit'),
+        'padding-left': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '24px'),
+    },
+    // [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST }`]: {
+    //     'background': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND, 'inherit'),
+    // }
 };

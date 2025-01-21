@@ -39,9 +39,9 @@ export enum SELECTOR {
     HOST_EXPANDED = ':host([expanded])',
     SCOPE = ':scope',
     TITLE = '.title',
-    ITEM = 'a[role="option"]',
+    ITEM = '.sidebar-item',
     ITEM_SELECTED = '.iron-selected',
-    ITEM_HOVER = 'a[role="option"]:hover',
+    ITEM_HOVER = '.sidebar-item:hover',
     SPACER = '.spacer',
     ITEM_TEXT = '.item-text',
     NOTIFICATION_BADGE = '.notification-badge',
@@ -57,7 +57,9 @@ export enum SELECTOR {
     DIVIDER = '.divider',
     MC_DRAWER = '.mdc-drawer',
     HA_SCROLLBAR = '.ha-scrollbar',
-    DATA_INFO = '[data-info]'
+    DATA_INFO = '[data-info]',
+    SIDEBAR_LIST = '.sidebar-list',
+    SIDEBAR_LIST_CHILDREN = '.sidebar-list-children',
 }
 
 export enum PSEUDO_SELECTOR {
@@ -82,7 +84,8 @@ export enum HA_CSS_VARIABLES {
     TEXT_PRIMARY_COLOR = '--text-primary-color',
     PRIMARY_TEXT_COLOR = '--primary-text-color',
     DIVIDER_COLOR = '--divider-color',
-    SCROLLBAR_THUMB_COLOR = '--scrollbar-thumb-color'
+    SCROLLBAR_THUMB_COLOR = '--scrollbar-thumb-color',
+    PAPER_ITEM_ICON_WIDTH = '--paper-item-icon-width'
 }
 
 export enum CUSTOM_SIDEBAR_CSS_VARIABLES {
@@ -96,6 +99,9 @@ export enum CUSTOM_SIDEBAR_CSS_VARIABLES {
     DIVIDER_TOP_COLOR = '--custom-sidebar-divider-top-color',
     DIVIDER_BOTTOM_COLOR = '--custom-sidebar-divider-bottom-color',
     SCROLLBAR_THUMB_COLOR = '--custom-sidebar-scrollbar-thumb-color',
+    LIST_CHILDREN_INDENT_SIZE = '--custom-sidebar-list-children-indent-size',
+    LIST_CHILDREN_BACKGROUND = '--custom-sidebar-list-children-background',
+    LIST_CHILDREN_COLOR = '--custom-sidebar-list-children-color',
 
     ITEM_BACKGROUND = '--custom-sidebar-item-background',
     ITEM_BACKGROUND_HOVER = '--custom-sidebar-item-background-hover',
@@ -115,7 +121,7 @@ export enum CUSTOM_SIDEBAR_CSS_VARIABLES {
     NOTIFICATION_COLOR_HOVER = '--custom-sidebar-notification-color-hover',
     NOTIFICATION_TEXT_COLOR = '--custom-sidebar-notification-text-color',
     NOTIFICATION_TEXT_COLOR_SELECTED = '--custom-sidebar-notification-text-color-selected',
-    NOTIFICATION_TEXT_COLOR_HOVER = '--custom-sidebar-notification-text-color-hover'
+    NOTIFICATION_TEXT_COLOR_HOVER = '--custom-sidebar-notification-text-color-hover',
 }
 
 export const ITEM_TEMPLATE_STRING_OPTIONS: ItemColorConfigKeys[] = [
@@ -162,7 +168,7 @@ export const ITEM_OPTIONS_VARIABLES_MAP: [ItemColorConfigKeys, string][] = [
     ['notification_color_hover',         CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_COLOR_HOVER],
     ['notification_text_color',          CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR],
     ['notification_text_color_selected', CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR_SELECTED],
-    ['notification_text_color_hover',    CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR_HOVER]
+    ['notification_text_color_hover',    CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR_HOVER],
 ];
 
 export const SIDEBAR_OPTIONS_VARIABLES_MAP: [SidebarColorConfigKeys, string][] = [
@@ -175,13 +181,21 @@ export const SIDEBAR_OPTIONS_VARIABLES_MAP: [SidebarColorConfigKeys, string][] =
     ['divider_color',                    CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_COLOR],
     ['divider_top_color',                CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_TOP_COLOR],
     ['divider_bottom_color',             CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_BOTTOM_COLOR],
+    ['list_children_background',            CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND],
+    ['list_children_color',                 CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR],
+    ['list_children_indent_size',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE],
     ...ITEM_OPTIONS_VARIABLES_MAP
 ];
 
 export enum CLASS {
     NOTIFICATIONS_BADGE = 'notification-badge',
     NOTIFICATIONS_BADGE_COLLAPSED = 'notification-badge-collapsed',
-    IRON_SELECTED = 'iron-selected'
+    IRON_SELECTED = 'iron-selected',
+    SIDEBAR_ITEM = 'sidebar-item',
+    SIDEBAR_LIST = 'sidebar-list',
+    SIDEBAR_LIST_PARENT = 'sidebar-list-parent',
+    SIDEBAR_LIST_CHILDREN = 'sidebar-list-children',
+    SIDEBAR_LIST_COLLAPSE_ICON = 'sidebar-list-collapse-icon',
 }
 
 export enum ATTRIBUTE {
@@ -191,6 +205,7 @@ export enum ATTRIBUTE {
     WITH_NOTIFICATION = 'data-notification',
     ARIA_SELECTED = 'aria-selected',
     ARIA_DISABLED = 'aria-disabled',
+    ARIA_EXPANDED = 'aria-expanded',
     DISABLED = 'disabled',
     HREF = 'href',
     STYLE = 'style'

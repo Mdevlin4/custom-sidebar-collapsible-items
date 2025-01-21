@@ -22,7 +22,11 @@ import {
     Sidebar,
     SidebarMode,
     Match,
-    SubscriberTemplate
+    SubscriberTemplate,
+    ConfigListItem,
+    isListItem,
+    ConfigItem,
+    isNewItem
 } from '@types';
 import {
     NAMESPACE,
@@ -110,7 +114,7 @@ class CustomSidebar {
     private _isSidebarEditable: boolean | undefined;
     private _renderer: HomeAssistantJavaScriptTemplatesRenderer;
     private _styleManager: HomeAssistantStylesManager;
-    private _items: HTMLAnchorElement[];
+    private _items: HTMLElement[];
     private _itemTouchedBinded: () => Promise<void>;
     private _mouseEnterBinded: (event: MouseEvent) => void;
     private _mouseLeaveBinded: () => void;
@@ -139,7 +143,7 @@ class CustomSidebar {
             promisableResultOptions
         );
         const items = await getPromisableResult<NodeListOf<HTMLAnchorElement>>(
-            () => paperListBox.querySelectorAll<HTMLAnchorElement>(`:scope > ${SELECTOR.ITEM}`),
+            () => paperListBox.querySelectorAll<HTMLAnchorElement>(`:scope > ${SELECTOR.ITEM}, :scope > a[href]`),
             (elements: NodeListOf<HTMLAnchorElement>): boolean => {
                 return Array.from(elements).every((element: HTMLAnchorElement): boolean => {
                     const text = element.querySelector<HTMLElement>(SELECTOR.ITEM_TEXT).innerText.trim();
@@ -151,7 +155,7 @@ class CustomSidebar {
         return [paperListBox, items, spacer];
     }
 
-    private _hideAnchor(anchor: HTMLAnchorElement, hide: boolean): void {
+    private _hideAnchor(anchor: HTMLElement, hide: boolean): void {
         if (hide) {
             anchor.style.display = 'none';
         } else {
@@ -162,11 +166,13 @@ class CustomSidebar {
     private _buildNewItem(configItem: ConfigNewItem): HTMLAnchorElement {
 
         const a = document.createElement('a');
-        a.href = configItem.href;
-        a.target = configItem.target || '';
+            a.href = configItem.href;
+            a.target = configItem.target || '';
         a.tabIndex = -1;
+        a.classList.add(CLASS.SIDEBAR_ITEM);
         a.setAttribute(ATTRIBUTE.ROLE, 'option');
         a.setAttribute(ATTRIBUTE.PANEL, configItem.item.toLowerCase().replace(/\s+/, '-'));
+        
 
         a.setAttribute(ATTRIBUTE.ARIA_SELECTED, 'false');
 
@@ -174,17 +180,32 @@ class CustomSidebar {
             <paper-icon-item
                 tabindex="0"
                 ${ATTRIBUTE.ROLE}="option"
-                ${ATTRIBUTE.ARIA_DISABLED}="false"
-            >
+                ${ATTRIBUTE.ARIA_DISABLED}="false">
                 <span class="${CLASS.NOTIFICATIONS_BADGE} ${CLASS.NOTIFICATIONS_BADGE_COLLAPSED}"></span>
                 <span class="item-text">
                     ${ configItem.item }
                 </span>
-                <span class="${CLASS.NOTIFICATIONS_BADGE}"></span>
-            </paper-icon-item>
+              </paper-icon-item>
         `.trim();
 
         return a;
+    }
+
+    private _buildListItem(topLevelElement: HTMLElement, children: ConfigOrder[], collapsed?: boolean): HTMLDivElement {
+        const container = document.createElement('div');
+        container.className = CLASS.SIDEBAR_LIST;
+        container.classList.add(CLASS.SIDEBAR_ITEM);
+        container.appendChild(topLevelElement);
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = CLASS.SIDEBAR_LIST_CHILDREN;
+        container.appendChild(childrenContainer);
+        for (const child of children) {
+            if(!!child)
+                childrenContainer.appendChild(this.processConfigItem(child));
+            else
+                console.warn(topLevelElement, "Child of list item is undefined");
+        }
+        return container;
     }
 
     private async _getTemplateString(template: unknown): Promise<string> {
@@ -304,7 +325,7 @@ class CustomSidebar {
         );
     }
 
-    private _subscribeIcon(element: HTMLAnchorElement, icon: string): void {
+    private _subscribeIcon(element: HTMLElement, icon: string): void {
         this._subscribeTemplate(
             icon,
             (rendered: string): void => {
@@ -334,7 +355,7 @@ class CustomSidebar {
         );
     }
 
-    private _subscribeNotification(element: HTMLAnchorElement, notification: string): void {
+    private _subscribeNotification(element: HTMLElement, notification: string): void {
         let badge = element.querySelector(`${SELECTOR.NOTIFICATION_BADGE}:not(${SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED})`);
         let badgeCollapsed = element.querySelector(SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED);
         if (!badge) {
@@ -368,7 +389,7 @@ class CustomSidebar {
 
     }
 
-    private _subscribeHide(element: HTMLAnchorElement, hide: boolean | string) {
+    private _subscribeHide(element: HTMLElement, hide: boolean | string) {
         if (typeof hide === 'boolean') {
             this._hideAnchor(element, hide);
         } else {
@@ -568,7 +589,6 @@ class CustomSidebar {
         }
 
     }
-
     private _getActivePaperIconElement(root: Document | ShadowRoot = document): Element | null {
         const activeEl = root.activeElement;
         if (activeEl) {
@@ -719,6 +739,7 @@ class CustomSidebar {
                     STYLES.INFO_COLOR_HOVER,
                     STYLES.NOTIFICATION_COLOR_SELECTED_NOTIFICATION_TEXT_COLOR_SELECTED,
                     STYLES.NOTIFICATION_COLOR_HOVER_NOTIFICATION_TEXT_COLOR_HOVER,
+                    STYLES.LIST_CHILDREN_STYLES,
                     this._config.styles || ''
                 ],
                 sideBarShadowRoot
@@ -735,11 +756,8 @@ class CustomSidebar {
                 const { order, hide_all } = this._config;
                 const [paperListBox, items, spacer] = elements;
 
-                let orderIndex = 0;
-                let crossedBottom = false;
 
                 this._items = Array.from(items);
-                const matched: Set<Element> = new Set();
 
                 if (hide_all) {
                     this._items.forEach((element: HTMLAnchorElement): void => {
@@ -747,169 +765,10 @@ class CustomSidebar {
                     });
                 }
 
-                const configItems: ConfigOrderWithItem[] = order.reduce(
-                    (acc: ConfigOrderWithItem[], orderItem: ConfigOrder): ConfigOrderWithItem[] => {
-                        const { item, match, exact, new_item } = orderItem;
-                        const itemLowerCase = item.toLocaleLowerCase();
-                        const element = new_item
-                            ? undefined
-                            : this._items.find((element: Element): boolean => {
-                                const text = match === Match.DATA_PANEL
-                                    ? element.getAttribute(ATTRIBUTE.PANEL)
-                                    : (
-                                        match === Match.HREF
-                                            ? element.getAttribute(ATTRIBUTE.HREF)
-                                            : element.querySelector<HTMLElement>(SELECTOR.ITEM_TEXT).innerText.trim()
-                                    );
+                this.processConfig().forEach((element: HTMLElement): void => { 
 
-                                const matchText = (
-                                    (!!exact && item === text) ||
-                                    // for non-admins, data-panel is not present in the config item
-                                    // due to this, text will be undefined in those cases
-                                    // as the tests run against an admin account, this cannot be covered
-                                    /* istanbul ignore next */
-                                    (!exact && !!text?.toLowerCase().includes(itemLowerCase))
-                                );
-
-                                if (matchText) {
-
-                                    if (matched.has(element)) {
-                                        return false;
-                                    } else {
-                                        matched.add(element);
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            });
-                        if (element) {
-                            element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
-                        }
-                        if (new_item || element) {
-                            acc.push({
-                                ...orderItem,
-                                element
-                            });
-                        }
-                        if (!new_item && !element) {
-                            console.warn(`${NAMESPACE}: you have an order item in your configuration that didn't match any sidebar item: "${item}"`);
-                        }
-                        return acc;
-                    },
-                    []
-                );
-
-                const processBottom = () => {
-                    if (!crossedBottom) {
-                        this._items.forEach((element: HTMLElement) => {
-                            if (!element.hasAttribute(ATTRIBUTE.PROCESSED)) {
-                                element.style.order = `${orderIndex}`;
-                            }
-                        });
-                        orderIndex ++;
-                        (spacer as HTMLDivElement).style.order = `${orderIndex}`;
-                        orderIndex ++;
-                        crossedBottom = true;
-                    }
-                };
-
-                configItems.forEach((orderItem: ConfigOrderWithItem): void => {
-
-                    if (orderItem.bottom) {
-                        processBottom();
-                    }
-
-                    if (orderItem.new_item) {
-
-                        const newItem = this._buildNewItem(orderItem);
-                        paperListBox.append(newItem);
-
-                        orderItem.element = newItem;
-
-                        orderItem.element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
-
-                        this._items.push(orderItem.element);
-
-                    } else if (orderItem.element) {
-
-                        const element = orderItem.element as HTMLAnchorElement;
-
-                        if (orderItem.href) {
-                            element.href = orderItem.href;
-                        }
-
-                        if (orderItem.target) {
-                            element.target = orderItem.target;
-                        }
-
-                    }
-
-                    orderItem.element.style.order = `${orderIndex}`;
-
-                    if (orderItem.name) {
-                        this._subscribeName(
-                            orderItem.element,
-                            orderItem.name
-                        );
-                    }
-
-                    if (orderItem.icon) {
-                        this._subscribeIcon(
-                            orderItem.element,
-                            orderItem.icon
-                        );
-                    }
-
-                    if (orderItem.info) {
-                        this._subscribeInfo(
-                            orderItem.element,
-                            orderItem.info
-                        );
-                    }
-
-                    if (orderItem.notification) {
-                        this._subscribeNotification(
-                            orderItem.element,
-                            orderItem.notification
-                        );
-                    }
-
-                    if (typeof orderItem.hide !== 'undefined') {
-                        this._subscribeHide(
-                            orderItem.element,
-                            orderItem.hide
-                        );
-                    }
-
-                    this._subscribeTemplateColorChanges(
-                        orderItem,
-                        orderItem.element,
-                        ITEM_OPTIONS_VARIABLES_MAP
-                    );
-
-                    if (orderItem.new_item) {
-
-                        // New items rollover
-                        orderItem.element.addEventListener(EVENT.MOUSEENTER, this._mouseEnterBinded);
-                        orderItem.element.addEventListener(EVENT.MOUSELEAVE, this._mouseLeaveBinded);
-
-                    }
-
-                    // When the item is clicked
-                    orderItem.element.addEventListener(EVENT.MOUSEDOWN, this._itemTouchedBinded);
-                    orderItem.element.addEventListener(EVENT.KEYDOWN, (event: KeyboardEvent): void => {
-                        if (event.key === KEY.ENTER) {
-                            this._itemTouchedBinded();
-                        }
-                    });
-
-                    orderIndex++;
-
+                    paperListBox.appendChild(element);
                 });
-
-                if (configItems.length) {
-                    processBottom();
-                }
 
                 this._items.sort(
                     (
@@ -921,6 +780,259 @@ class CustomSidebar {
                 this._panelLoaded();
 
             });
+    }
+
+    private getConfigItems(): ConfigOrderWithItem[] {
+        const { order, hide_all } = this._config;
+        const matched: Set<Element> = new Set();
+        return order.map((orderItem: ConfigOrder): ConfigOrderWithItem => this._getConfigOrderWithItem(orderItem, matched));
+    }
+
+    private processConfig(): HTMLElement[] {
+        let orderIndex = 0;
+        let crossedBottom = false;
+        const configItems = this.getConfigItems();
+        
+        const sidebarElements: HTMLElement[] = [];
+        
+        configItems.forEach((item) => {
+            if (item)
+                sidebarElements.push(this.processConfigItem(item))
+        });
+
+        if (configItems.length) {
+            // processBottom();
+        }
+
+        this._configPromise
+            .then((config: Config) => {
+                this._config = getConfig(
+                    this._ha.hass.user,
+                    navigator.userAgent.toLowerCase(),
+                    config
+                );
+            });
+
+        return sidebarElements;
+    }
+
+    private _getConfigOrderWithItem(orderItem: ConfigOrder, matched: Set<Element>): ConfigOrderWithItem {
+        const { item, match, exact, new_item } = orderItem;
+        let element = undefined;
+        if (!new_item && !isListItem(orderItem)) {
+            element =  this._items.find((element: Element): boolean => {
+                const itemLowerCase = item.toLocaleLowerCase();
+                const text = match === Match.DATA_PANEL
+                    ? element.getAttribute(ATTRIBUTE.PANEL)
+                    : (
+                        match === Match.HREF
+                            ? element.getAttribute(ATTRIBUTE.HREF)
+                            : element.querySelector<HTMLElement>(SELECTOR.ITEM_TEXT).innerText.trim()
+                    );
+
+                const matchText = (
+                    (!!exact && item === text) ||
+                    // for non-admins, data-panel is not present in the config item
+                    // due to this, text will be undefined in those cases
+                    // as the tests run against an admin account, this cannot be covered
+                    /* istanbul ignore next */
+                    (!exact && !!text?.toLowerCase().includes(itemLowerCase))
+                );
+
+                if (matchText) {
+
+                    if (matched.has(element)) {
+                        return false;
+                    } else {
+                        matched.add(element);
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+        if (element) {
+            element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
+            element.classList.add(CLASS.SIDEBAR_ITEM);
+        }
+        if (isListItem(orderItem)) {
+            orderItem.children = orderItem.children.map((child: ConfigOrder): ConfigOrderWithItem => this._getConfigOrderWithItem(child, matched));
+        }
+        if (new_item || isListItem(orderItem) || element) {
+            return {
+                ...orderItem,
+                element
+            };
+        }
+        if (!new_item && !element) {
+            console.warn(`${NAMESPACE}: you have an order item in your configuration that didn't match any sidebar item: "${item}"`);
+        }
+        return null;
+    }
+
+        
+    // private processBottom(): void {
+    //     if (!crossedBottom) {
+    //         this._items.forEach((element: HTMLElement) => {
+    //             if (!element.hasAttribute(ATTRIBUTE.PROCESSED)) {
+    //                 element.style.order = `${orderIndex}`;
+    //             }
+    //         });
+    //         orderIndex ++;
+    //         (spacer as HTMLDivElement).style.order = `${orderIndex}`;
+    //         orderIndex ++;
+    //         crossedBottom = true;
+    //     }
+    // }
+
+    private processConfigItem(orderItem: ConfigOrderWithItem): HTMLElement {
+        if (orderItem.bottom) {
+            // processBottom();
+        }
+
+        if (isListItem(orderItem)) {
+            const topLevelElement = document.createElement('paper-icon-item');
+            const topLevelIcon = document.createElement(ELEMENT.HA_ICON);
+            topLevelIcon.setAttribute('icon', orderItem.icon);
+            topLevelIcon.setAttribute('slot', 'item-icon');
+            topLevelElement.appendChild(topLevelIcon);
+            topLevelElement.setAttribute(ATTRIBUTE.PROCESSED, 'true');
+            topLevelElement.classList.add(CLASS.SIDEBAR_LIST_PARENT);
+
+            const topLevelText = document.createElement('span');
+            topLevelText.innerHTML = orderItem.item;
+            topLevelElement.appendChild(topLevelText);
+
+            const expanderIcon = document.createElement(ELEMENT.HA_ICON);
+            expanderIcon.className = CLASS.SIDEBAR_LIST_COLLAPSE_ICON;
+            expanderIcon.setAttribute('icon', orderItem.collapsed ? 'mdi:chevron-down' : 'mdi:chevron-up');
+            topLevelElement.appendChild(expanderIcon);
+            topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, !orderItem.collapsed ? 'true' : 'false');
+            const listItem = this._buildListItem(topLevelElement, orderItem.children, orderItem.collapsed);
+            listItem.setAttribute(ATTRIBUTE.PROCESSED, 'true'); 
+            orderItem.element = listItem;
+
+            const computeVisibleChildren = (element: HTMLElement): number => {
+                const childrenList = <HTMLElement>element.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+                let visibleChildren = 0;
+                for (const child of Array.from(childrenList.children)) {
+                    if ((<HTMLElement>child).style.display !== 'none')
+                        visibleChildren++;
+                    if (child.querySelector(`[${ATTRIBUTE.ARIA_EXPANDED}=true]`)) {
+                        const nestedList = child.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+                        for (const nestedChild of Array.from(nestedList.children)) {
+                            if ((<HTMLElement>nestedChild).style.display !== 'none')
+                                visibleChildren++;
+                        }
+                    }
+                }
+                return visibleChildren;
+            };
+            const SIDEBAR_EXPAND_ANIMATION_TIME_PER_CHILD = 75;
+            const ITEM_HEIGHT = 48;
+            
+            const childrenList = <HTMLElement>orderItem.element.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+            childrenList.style.maxHeight = !!orderItem.collapsed ? '0' : (computeVisibleChildren(orderItem.element) * 48) + 'px'; // TODO hardcoded 48
+
+            topLevelElement.addEventListener('click', () => {
+                const expanderIcon = orderItem.element.querySelector(`.${CLASS.SIDEBAR_LIST_COLLAPSE_ICON}`);
+                const childrenList = <HTMLElement>orderItem.element.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+                const isOpening = childrenList.style.maxHeight === '0' || childrenList.style.maxHeight === '0px';
+                const visibleChildren = computeVisibleChildren(orderItem.element);
+                const scrollHeight = visibleChildren * ITEM_HEIGHT;
+                const transitionTime = visibleChildren * SIDEBAR_EXPAND_ANIMATION_TIME_PER_CHILD;
+                childrenList.style.maxHeight = isOpening ? `${scrollHeight}px` : '0';
+                childrenList.style.transition = `max-height ${transitionTime}ms ease-in-out`,
+                expanderIcon.setAttribute('icon', isOpening ? 'mdi:chevron-up' : 'mdi:chevron-down');
+                topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, isOpening ? 'true' : 'false');
+                if (isOpening) {
+                    setTimeout(() => childrenList.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+                    const parentList = <HTMLElement>topLevelElement.closest(SELECTOR.SIDEBAR_LIST_CHILDREN);
+                    if (parentList)
+                        parentList.style.maxHeight = `${parseInt(parentList.style.maxHeight) + scrollHeight}px`;
+                }
+            });
+        } else if (isNewItem(orderItem)) {
+
+            const newItem = this._buildNewItem(orderItem);
+
+            orderItem.element = newItem;
+
+            orderItem.element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
+
+            this._items.push(orderItem.element);
+        } else if (orderItem.element) {
+
+            const element = orderItem.element as HTMLAnchorElement;
+            if (orderItem.href) {
+                element.href = orderItem.href;
+            }
+
+            if (orderItem.target) {
+                element.target = orderItem.target;
+            }
+
+        }
+
+        // orderItem.element.style.order = `${orderIndex}`;
+
+        if (orderItem.name) {
+            this._subscribeName(
+                orderItem.element,
+                orderItem.name
+            );
+        }
+
+        if (orderItem.icon) {
+            this._subscribeIcon(
+                orderItem.element,
+                orderItem.icon
+            );
+        }
+
+        if (orderItem.info) {
+            this._subscribeInfo(
+                orderItem.element,
+                orderItem.info
+            );
+        }
+
+        if (orderItem.notification) {
+            this._subscribeNotification(
+                orderItem.element,
+                orderItem.notification
+            );
+        }
+
+        if (typeof orderItem.hide !== 'undefined') {
+            this._subscribeHide(
+                orderItem.element,
+                orderItem.hide
+            );
+        }
+
+        this._subscribeTemplateColorChanges(
+            orderItem,
+            orderItem.element,
+            ITEM_OPTIONS_VARIABLES_MAP
+        );
+
+        if (orderItem.new_item || isListItem(orderItem)) {
+
+            // New items rollover
+            orderItem.element.addEventListener(EVENT.MOUSEENTER, this._mouseEnterBinded);
+            orderItem.element.addEventListener(EVENT.MOUSELEAVE, this._mouseLeaveBinded);
+
+        }
+
+        // When the item is clicked
+        orderItem.element.addEventListener(EVENT.MOUSEDOWN, this._itemTouchedBinded);
+        orderItem.element.addEventListener(EVENT.KEYDOWN, (event: KeyboardEvent): void => {
+            if (event.key === KEY.ENTER) {
+                this._itemTouchedBinded();
+            }
+        });
+        return orderItem.element;
     }
 
     private async _itemTouched(): Promise<void> {
@@ -1000,10 +1112,10 @@ class CustomSidebar {
                 return link;
             }, null);
 
-        this._items.forEach((anchor: HTMLAnchorElement) => {
+        this._items.forEach((anchor: HTMLElement) => {
             const isActive = (
                 activeLink &&
-                activeLink === anchor
+                (activeLink === anchor || activeLink.contains(anchor)) 
             ) ||
             (
                 !activeLink &&

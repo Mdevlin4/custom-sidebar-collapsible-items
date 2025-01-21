@@ -406,6 +406,8 @@ const validateConfigItem = (configItem: ConfigItem): void => {
         if (!configItem.icon) {
             throw new SyntaxError(`${ERROR_PREFIX} in ${configItem.item}, if you set "new_item" as "true", "icon" property is necessary`);
         }
+    } else if (configItem.new_item === false && configItem.children) {
+        throw new SyntaxError(`${ERROR_PREFIX} in ${configItem.item}, "new_item" property cannot be false if "children" property is set. The parent item should be a new item since it will not replace a link.`);
     }
 };
 

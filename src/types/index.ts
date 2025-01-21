@@ -81,6 +81,9 @@ export interface ItemColorConfig {
     notification_text_color?: string;
     notification_text_color_selected?: string;
     notification_text_color_hover?: string;
+    list_children_indent_size?: string;
+    list_children_background?: string;
+    list_children_color?: string;
 }
 
 export interface SidebarColorConfig extends ItemColorConfig {
@@ -110,17 +113,24 @@ export interface ConfigItem extends ItemColorConfig {
     target?: '_self' | '_blank';
     icon?: string;
     new_item?: never;
+    children?: never;
+    collapsed?: never;
 }
 
 export interface ConfigNewItem extends Omit<ConfigItem, 'new_item'> {
     new_item: boolean;
-    item: string;
     href: string;
     icon: string;
 }
 
-export type ConfigOrder = ConfigItem | ConfigNewItem;
-export type ConfigOrderWithItem = ConfigOrder & { element?: HTMLAnchorElement };
+export interface ConfigListItem extends Omit<ConfigItem, 'children' | 'collapsed' | 'new_item'> {
+    new_item: boolean;          // Can either be omitted in the config or set to true. Throws error if set to false. Can't use existing item as a list parent.
+    children: ConfigOrder[];
+    collapsed: boolean;
+}
+
+export type ConfigOrder = ConfigItem | ConfigNewItem | ConfigListItem;
+export type ConfigOrderWithItem = ConfigOrder & { element?: HTMLElement };
 
 export interface BaseConfig extends SidebarColorConfig {
     title?: string;
@@ -184,4 +194,12 @@ declare global {
     interface Window {
         CustomSidebar: object;
     }
+}
+
+export function isNewItem(config: ConfigOrder): config is ConfigNewItem & Pick<ConfigOrderWithItem, 'element'>  {
+    return !('children' in config) && !!config.new_item && !!config.href;
+}
+
+export function isListItem(config: ConfigOrder): config is ConfigListItem & Pick<ConfigOrderWithItem, 'element'>  {
+    return 'children' in config && Array.isArray(config.children) && config.children.length > 0;
 }
