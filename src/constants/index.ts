@@ -31,7 +31,7 @@ export enum ELEMENT {
     PAPER_ICON_ITEM = 'paper-icon-item',
     HA_SVG_ICON = 'ha-svg-icon',
     HA_ICON = 'ha-icon',
-    HA_ICON_BUTTON = 'ha-icon-button'
+    HA_ICON_BUTTON = 'ha-icon-button',
 }
 
 export enum SELECTOR {
@@ -42,6 +42,7 @@ export enum SELECTOR {
     ITEM = '.sidebar-item',
     ITEM_SELECTED = '.iron-selected',
     ITEM_HOVER = '.sidebar-item:hover',
+    LINK_ITEM = 'a[href]',
     SPACER = '.spacer',
     ITEM_TEXT = '.item-text',
     NOTIFICATION_BADGE = '.notification-badge',
@@ -60,6 +61,11 @@ export enum SELECTOR {
     DATA_INFO = '[data-info]',
     SIDEBAR_LIST = '.sidebar-list',
     SIDEBAR_LIST_CHILDREN = '.sidebar-list-children',
+    SIDEBAR_LIST_PARENT = '.sidebar-list-parent',
+    SIDEBAR_LIST_CHILDREN_LINKS = '.sidebar-list-children a',
+    SIDEBAR_LIST_COLLAPSE_ICON = '.sidebar-list-collapse-icon',
+    SIDEBAR_LIST_EXPANDED = '.sidebar-list-expanded',
+    SIDEBAR_LIST_COLLAPSED = '.sidebar-list-collapsed',
 }
 
 export enum PSEUDO_SELECTOR {
@@ -102,6 +108,7 @@ export enum CUSTOM_SIDEBAR_CSS_VARIABLES {
     LIST_CHILDREN_INDENT_SIZE = '--custom-sidebar-list-children-indent-size',
     LIST_CHILDREN_BACKGROUND = '--custom-sidebar-list-children-background',
     LIST_CHILDREN_COLOR = '--custom-sidebar-list-children-color',
+    LIST_ANIMATION_DURATION = '--custom-sidebar-list-animation-duration',
 
     ITEM_BACKGROUND = '--custom-sidebar-item-background',
     ITEM_BACKGROUND_HOVER = '--custom-sidebar-item-background-hover',
@@ -169,6 +176,10 @@ export const ITEM_OPTIONS_VARIABLES_MAP: [ItemColorConfigKeys, string][] = [
     ['notification_text_color',          CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR],
     ['notification_text_color_selected', CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR_SELECTED],
     ['notification_text_color_hover',    CUSTOM_SIDEBAR_CSS_VARIABLES.NOTIFICATION_TEXT_COLOR_HOVER],
+    ['list_children_background',            CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND],
+    ['list_children_color',                 CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR],
+    ['list_children_indent_size',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE],
+    ['list_animation_duration',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_ANIMATION_DURATION],
 ];
 
 export const SIDEBAR_OPTIONS_VARIABLES_MAP: [SidebarColorConfigKeys, string][] = [
@@ -181,9 +192,6 @@ export const SIDEBAR_OPTIONS_VARIABLES_MAP: [SidebarColorConfigKeys, string][] =
     ['divider_color',                    CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_COLOR],
     ['divider_top_color',                CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_TOP_COLOR],
     ['divider_bottom_color',             CUSTOM_SIDEBAR_CSS_VARIABLES.DIVIDER_BOTTOM_COLOR],
-    ['list_children_background',            CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND],
-    ['list_children_color',                 CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR],
-    ['list_children_indent_size',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE],
     ...ITEM_OPTIONS_VARIABLES_MAP
 ];
 
@@ -196,6 +204,8 @@ export enum CLASS {
     SIDEBAR_LIST_PARENT = 'sidebar-list-parent',
     SIDEBAR_LIST_CHILDREN = 'sidebar-list-children',
     SIDEBAR_LIST_COLLAPSE_ICON = 'sidebar-list-collapse-icon',
+    SIDEBAR_LIST_EXPANDED = 'sidebar-list-expanded',
+    SIDEBAR_LIST_COLLAPSED = 'sidebar-list-collapsed',
 }
 
 export enum ATTRIBUTE {
@@ -208,7 +218,10 @@ export enum ATTRIBUTE {
     ARIA_EXPANDED = 'aria-expanded',
     DISABLED = 'disabled',
     HREF = 'href',
-    STYLE = 'style'
+    STYLE = 'style',
+    BOTTOM = 'bottom',
+    ORDER = 'order',
+    TABINDEX = 'tabindex',
 }
 
 export enum EVENT {
@@ -216,6 +229,7 @@ export enum EVENT {
     MOUSEENTER = 'mouseenter',
     MOUSELEAVE = 'mouseleave',
     KEYDOWN = 'keydown',
+    CLICK = 'click',
     HASS_EDIT_SIDEBAR = 'hass-edit-sidebar',
     RENDER_TEMPLATE = 'render_template'
 }

@@ -84,6 +84,7 @@ export interface ItemColorConfig {
     list_children_indent_size?: string;
     list_children_background?: string;
     list_children_color?: string;
+    list_animation_duration?: string;
 }
 
 export interface SidebarColorConfig extends ItemColorConfig {
@@ -200,6 +201,6 @@ export function isNewItem(config: ConfigOrder): config is ConfigNewItem & Pick<C
     return !('children' in config) && !!config.new_item && !!config.href;
 }
 
-export function isListItem(config: ConfigOrder): config is ConfigListItem & Pick<ConfigOrderWithItem, 'element'>  {
+export function isListItem(config: ConfigOrder): config is ConfigListItem & Pick<ConfigOrderWithItem, 'element'>   {
     return 'children' in config && Array.isArray(config.children) && config.children.length > 0;
 }
