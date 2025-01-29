@@ -72,10 +72,10 @@ export const FUNCTIONALITY = {
         ...NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR
     },
     [`${ SELECTOR.HOST } ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
-        left: `calc(var(--app-drawer-width, 248px) - 22px - ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, "12px")})`,
+        left: `calc(var(--app-drawer-width, 248px) - 22px - ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')})`
     },
     [`${ SELECTOR.HOST } ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${SELECTOR.SIDEBAR_LIST_CHILDREN} ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.NOTIFICATION_BADGE }:not(${ SELECTOR.NOTIFICATIONS_BADGE_COLLAPSED })`]: {
-        left: `calc(var(--app-drawer-width, 248px) - 22px - (2*${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, "12px")}))`,
+        left: `calc(var(--app-drawer-width, 248px) - 22px - (2*${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')}))`
     },
     [`${ SELECTOR.HOST } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.CONFIGURATION_BADGE }`]: {
         ...NOTIFICATION_COLOR_NOTIFICATION_TEXT_COLOR
@@ -91,38 +91,34 @@ export const FUNCTIONALITY = {
       ${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${SELECTOR.SIDEBAR_LIST_PARENT}`]: {
         'transition-property': 'visibility',
         'transition-timing-function': 'ease-in-out',
-        'transition-duration': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_ANIMATION_DURATION, '500ms'),
+        'transition-duration': getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_ANIMATION_DURATION, '500ms')
     },
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }${ SELECTOR.SIDEBAR_LIST_EXPANDED }`]: {
-        visibility: 'visible',
+        visibility: 'visible'
     },
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN}${ SELECTOR.SIDEBAR_LIST_COLLAPSED }`]: {
-        visibility: 'hidden',
+        visibility: 'hidden'
     },
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN}${ SELECTOR.SIDEBAR_LIST_COLLAPSED } ${SELECTOR.LINK_ITEM},
       ${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN}${ SELECTOR.SIDEBAR_LIST_COLLAPSED } ${SELECTOR.SIDEBAR_LIST_PARENT}`]: {
-        visibility: 'hidden',
+        visibility: 'hidden'
     },
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.ITEM_TEXT }`]: {
-        'max-width': `calc(100% - var(--paper-item-icon-width) -  ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, "12px")})`
+        'max-width': `calc(100% - var(--paper-item-icon-width) -  ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')})`
     },
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ ELEMENT.PAPER_ICON_ITEM } > ${ SELECTOR.CONFIGURATION_BADGE }`]: {
-        "inset-inline-start": `calc(var(--app-drawer-width,248px) - 42px - ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, "12px")})`
+        'inset-inline-start': `calc(var(--app-drawer-width,248px) - 42px - ${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')})`
     },
     // For nested lists use margin so the background appears indented using the parents color
-    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }`]: {  
-        "margin-left": `calc(2*${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, "12px")})`, 
-        "padding-left": "0 !important",
+    [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }`]: {
+        'margin-left': `calc(2*${getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')})`,
+        'padding-left': '0 !important'
     },
     [`${ SELECTOR.HOST } .${ CLASS.SIDEBAR_LIST } .${ CLASS.SIDEBAR_LIST_COLLAPSE_ICON }`]: {
         '--mdc-icon-size': '32px',
         'position': 'absolute',
-        'right': '8px',
-    },
-    // [`${ SELECTOR.HOST } ${ SELECTOR.LIST_COLLAPSIBLE_PARENT}`]: {
-    //     'padding': '0',
-    //     'border': 'none'
-    // }
+        'right': '8px'
+    }
 };
 
 
@@ -319,8 +315,8 @@ export const SELECTION_BACKGROUND_SELECTION_OPACITY = {
         )
     },
     [`${ SELECTOR.HOST } ${SELECTOR.SIDEBAR_LIST_PARENT}.${ SELECTOR.ITEM_SELECTED } > ${ ELEMENT.PAPER_ICON_ITEM }${ PSEUDO_SELECTOR.BEFORE }`]: {
-        display: "none"
-    },
+        display: 'none'
+    }
 };
 
 export const INFO_COLOR = {
@@ -388,6 +384,6 @@ export const LIST_CHILDREN_STYLES = {
     [`${ SELECTOR.HOST } ${ SELECTOR.SIDEBAR_LIST_CHILDREN }`]: {
         backgroundColor: getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND, 'inherit'),
         color: getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR, 'inherit'),
-        paddingLeft: getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px'),
-    },
+        paddingLeft: getCSSVariables(CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE, '12px')
+    }
 };

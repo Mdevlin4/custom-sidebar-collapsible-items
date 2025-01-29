@@ -3,7 +3,7 @@ import {
     Config,
     ConfigException,
     ConfigOrder,
-    MatchersCondition,
+    MatchersCondition
 } from '@types';
 import {
     BASE_NAME,
@@ -204,7 +204,7 @@ class ConfigFlatter {
     private _flattenOrder(config: Config): ConfigOrder[] {
         const order = config.order ?? [];
         const orderMap = new Map<string, ConfigOrder>();
-        
+
         order.forEach((orderItem: ConfigOrder): void => {
             if (orderMap.has(orderItem.item)) {
                 orderMap.set(

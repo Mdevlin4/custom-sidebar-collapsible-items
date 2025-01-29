@@ -25,7 +25,6 @@ import {
     SubscriberTemplate,
     ConfigListItem,
     isListItem,
-    ConfigItem,
     isNewItem
 } from '@types';
 import {
@@ -39,11 +38,8 @@ import {
     KEY,
     CLASS,
     EVENT,
-    CHECK_FOCUSED_SHADOW_ROOT,
-    NODE_NAME,
     JS_TEMPLATE_REG,
     JINJA_TEMPLATE_REG,
-    PROFILE_PATH,
     PROFILE_GENERAL_PATH,
     BLOCKED_PROPERTY,
     SIDEBAR_MODE_TO_DOCKED_SIDEBAR,
@@ -81,8 +77,8 @@ class CustomSidebar {
         );
 
         selector.addEventListener(
-            HAQuerySelectorEvent.ON_PANEL_LOAD, 
-            (_) => this._panelLoaded(null)
+            HAQuerySelectorEvent.ON_PANEL_LOAD,
+            () => this._panelLoaded(null)
         );
 
         selector.listen();
@@ -167,8 +163,8 @@ class CustomSidebar {
     private _buildNewItem(configItem: ConfigNewItem): HTMLAnchorElement {
 
         const a = document.createElement('a');
-            a.href = configItem.href;
-            a.target = configItem.target || '';
+        a.href = configItem.href;
+        a.target = configItem.target || '';
         a.tabIndex = -1;
         a.classList.add(CLASS.SIDEBAR_ITEM);
         a.setAttribute(ATTRIBUTE.ROLE, 'option');
@@ -200,7 +196,7 @@ class CustomSidebar {
         expanderIcon.setAttribute('icon', 'mdi:chevron-down');
         topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, 'false');
         childrenList.classList.remove(CLASS.SIDEBAR_LIST_EXPANDED);
-        childrenList.style.maxHeight = "0";
+        childrenList.style.maxHeight = '0';
         childrenList.classList.add(CLASS.SIDEBAR_LIST_COLLAPSED);
     }
 
@@ -228,8 +224,8 @@ class CustomSidebar {
         const visibleChildren = this._computeVisibleChildren(list);
         childrenList.style.maxHeight = `${visibleChildren * this._sidebarItemHeight}px`;
 
-        const durationCss = getComputedStyle(childrenList).transitionDuration
-        let durationMs =  parseFloat(durationCss) * (/\ds$/.test(durationCss) ? 1000 : 1);
+        const durationCss = getComputedStyle(childrenList).transitionDuration;
+        const durationMs =  parseFloat(durationCss) * (/\ds$/.test(durationCss) ? 1000 : 1);
         setTimeout(() => childrenList.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), durationMs * .8);
     }
     private _buildListItem(orderItem: ConfigListItem, existingElements: HTMLAnchorElement[], matched: Set<HTMLAnchorElement>): HTMLElement {
@@ -258,12 +254,12 @@ class CustomSidebar {
         expanderIcon.setAttribute('icon', orderItem.collapsed ? 'mdi:chevron-down' : 'mdi:chevron-up');
         topLevelElement.appendChild(expanderIcon);
         topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, !orderItem.collapsed ? 'true' : 'false');
-        topLevelElement.setAttribute(ATTRIBUTE.PROCESSED, 'true'); 
+        topLevelElement.setAttribute(ATTRIBUTE.PROCESSED, 'true');
         listItemContainer.appendChild(topLevelElement);
 
         // Build the children of the top-level element
         const listItemChildren = this._buildListItemChildren(topLevelElement, orderItem.children, existingElements, matched);
-        listItemContainer.appendChild(listItemChildren); 
+        listItemContainer.appendChild(listItemChildren);
         const childrenList = <HTMLElement>listItemContainer.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
         childrenList.classList.add(orderItem.collapsed ? CLASS.SIDEBAR_LIST_COLLAPSED : CLASS.SIDEBAR_LIST_EXPANDED);
         if (!orderItem.collapsed)
@@ -272,18 +268,18 @@ class CustomSidebar {
                 childrenList.style.maxHeight = `${this._computeVisibleChildren(listItemContainer) * this._sidebarItemHeight}px`;
             });
 
-        const toggleListExpandedHandler = (event: Event): void => {
+        const toggleListExpandedHandler = (): void => {
             const childrenList = <HTMLElement>listItemContainer.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
             const isOpening = childrenList.classList.contains(CLASS.SIDEBAR_LIST_COLLAPSED); // If the list is currently collapsed, we are opening it
             // Set timeout with 0ms to allow the browser to render the display block before calculating the scrollHeight TODO
             setTimeout(() => (isOpening) ? this._expandList(listItemContainer) : this._collapseList(listItemContainer));
-            
+
         };
         topLevelElement.addEventListener(EVENT.CLICK, toggleListExpandedHandler);
         listItemContainer.addEventListener(EVENT.KEYDOWN, (event: KeyboardEvent) => {
             if (event.target === listItemContainer) {
-                if ((event.key === "Enter" || event.key === " ")) {
-                    toggleListExpandedHandler(event)
+                if ((event.key === 'Enter' || event.key === ' ')) {
+                    toggleListExpandedHandler();
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -326,14 +322,14 @@ class CustomSidebar {
             const c = (a.order || children.indexOf(a)) - (b.order || children.indexOf(b));
             // If order is the same, prefer the one with an explicit order
             if (c === 0) {
-                if (a.order === undefined) { return 1; } 
-                else if (b.order === undefined) { return -1; } 
+                if (a.order === undefined) { return 1; }
+                else if (b.order === undefined) { return -1; }
                 else { return 0; }
             }
             return c;
         });
         for (const child of children) {
-            if(!!child) {
+            if(child) {
                 const configOrderWithItem = this._getConfigOrderWithItem(child, existingElements, matched); // isBottom = undefined because we are in a list so this is determined by the parent
                 if (configOrderWithItem && configOrderWithItem.element) {
                     (<ConfigOrderWithItem>child).element = configOrderWithItem.element;
@@ -345,7 +341,7 @@ class CustomSidebar {
                 }
             }
             else
-                console.warn(topLevelElement, "Child of list item is undefined");
+                console.warn(topLevelElement, 'Child of list item is undefined');
         }
         return childrenContainer;
     }
@@ -705,9 +701,8 @@ class CustomSidebar {
         Promise.all([
             this._haDrawer.selector.$.query(SELECTOR.MC_DRAWER).element,
             this._sidebar.element,
-            this._sidebar.selector.$.element,
-            this._sidebar.selector.$.query(ELEMENT.PAPER_LISTBOX).element
-        ]).then(([mcDrawer, sidebar, sideBarShadowRoot, paperListBox]: [HTMLElement, HTMLElement, ShadowRoot, HTMLElement]) => {
+            this._sidebar.selector.$.element
+        ]).then(([mcDrawer, sidebar, sideBarShadowRoot]: [HTMLElement, HTMLElement, ShadowRoot]) => {
 
             this._subscribeTemplateColorChanges(
                 this._config,
@@ -726,13 +721,13 @@ class CustomSidebar {
             sidebar.addEventListener(EVENT.KEYDOWN, (event: KeyboardEvent) => {
                 if (
                     event.key === KEY.ARROW_DOWN ||
-                    event.key === KEY.ARROW_UP || 
+                    event.key === KEY.ARROW_UP ||
                     event.key === KEY.TAB
                 ) {
                     if (this._focusNextElement(sidebar.shadowRoot, event.key === KEY.ARROW_DOWN || (event.key === KEY.TAB && !event.shiftKey), event.key !== KEY.TAB)) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
                     }
                 }
             }, true);
@@ -803,7 +798,7 @@ class CustomSidebar {
         this._getLinkElements()
             .then((elements) => {
 
-                const { order, hide_all } = this._config;
+                const { hide_all } = this._config;
                 const [paperListBox, itemsNodeList, spacer] = elements;
                 const items = Array.from<HTMLAnchorElement>(itemsNodeList);
                 let crossedBottom = false;
@@ -862,7 +857,7 @@ class CustomSidebar {
             }
             return false;
         });
-        
+
         if (element) {
             element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
             element.classList.add(CLASS.SIDEBAR_ITEM);
@@ -882,7 +877,7 @@ class CustomSidebar {
         const { order } = this._config;
         const matched: Set<HTMLAnchorElement> = new Set();
         const configItems : ConfigOrderWithItem[] = order
-             .filter((item: ConfigOrderWithItem): boolean => !!item)
+            .filter((item: ConfigOrderWithItem): boolean => !!item)
             .map((item: ConfigOrder): ConfigOrderWithItem => this._getConfigOrderWithItem(item, existingElements, matched))
             .filter((item: ConfigOrderWithItem): boolean => !!item);
 
@@ -892,15 +887,15 @@ class CustomSidebar {
         configItems.forEach((item) => {
             // If config explicitly sets bottom true, or if the item is after the spacer in the DOM by default (unless that element explicitly sets bottom to false)
             if (item.bottom) {
-                item.element.setAttribute(ATTRIBUTE.BOTTOM, "true");
+                item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
             } else if (item.element) {
                 const spacerIndex = Array.prototype.indexOf.call(paperListBox.childNodes, paperListBox.querySelector(SELECTOR.SPACER));
                 const itemIndex = Array.prototype.indexOf.call(paperListBox.childNodes, item.element);
                 if (itemIndex > spacerIndex && item.bottom !== false)
-                    item.element.setAttribute(ATTRIBUTE.BOTTOM, "true");
+                    item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
             } else if (!item) {
-                    console.warn(`${NAMESPACE}: error processing config item to a sidebar element:`, item);
-                    return;
+                console.warn(`${NAMESPACE}: error processing config item to a sidebar element:`, item);
+                return;
             }
 
             this._setupConfigItemListeners(item);
@@ -911,7 +906,7 @@ class CustomSidebar {
             } else {
                 item.element.setAttribute(ATTRIBUTE.ORDER, (orderIndex++).toString());
             }
-            sidebarElements.push(item.element)
+            sidebarElements.push(item.element);
         });
 
         sidebarElements.sort(
@@ -919,9 +914,9 @@ class CustomSidebar {
                 sidebarItemA: HTMLElement,
                 sidebarItemB: HTMLElement
             ): number => {
-                if (sidebarItemA.getAttribute("bottom") && !sidebarItemB.getAttribute("bottom"))
+                if (sidebarItemA.getAttribute('bottom') && !sidebarItemB.getAttribute('bottom'))
                     return 1;
-                else if (!sidebarItemA.getAttribute("bottom") && sidebarItemB.getAttribute("bottom"))
+                else if (!sidebarItemA.getAttribute('bottom') && sidebarItemB.getAttribute('bottom'))
                     return -1;
                 else
                     return parseInt(sidebarItemA.getAttribute(ATTRIBUTE.ORDER)) - parseInt(sidebarItemB.getAttribute(ATTRIBUTE.ORDER));
@@ -973,15 +968,15 @@ class CustomSidebar {
 
     // Returns number of visible children, including nested list children. Needed for the list's max-height expand animation.
     private _computeVisibleChildren(element: HTMLElement): number {
-        return Array.from(element.querySelectorAll<HTMLElement>(`${SELECTOR.SIDEBAR_LIST_PARENT}, ${SELECTOR.LINK_ITEM}`)).filter((child: HTMLElement) => 
-                    child.checkVisibility({checkVisibilityCSS: true, visibilityProperty: true})   // modern browser support
-                || !!(child.offsetWidth || child.offsetHeight || child.getClientRects().length )  // jQuery visibility check
+        return Array.from(element.querySelectorAll<HTMLElement>(`${SELECTOR.SIDEBAR_LIST_PARENT}, ${SELECTOR.LINK_ITEM}`)).filter((child: HTMLElement) =>
+            child.checkVisibility({checkVisibilityCSS: true, visibilityProperty: true})   // modern browser support
+            || !!(child.offsetWidth || child.offsetHeight || child.getClientRects().length )  // jQuery visibility check
         ).length;
     }
 
     private _setupConfigItemListeners(orderItem: ConfigOrderWithItem): void {
         if (!orderItem.element) {
-            console.error("Sidebar item has no element", orderItem);
+            console.error('Sidebar item has no element', orderItem);
             return;
         }
         if (orderItem.name) {
@@ -1126,7 +1121,7 @@ class CustomSidebar {
         items.forEach((anchor: HTMLElement) => {
             const isActive = (
                 activeLink &&
-                (activeLink === anchor || activeLink.contains(anchor)) 
+                (activeLink === anchor || activeLink.contains(anchor))
             ) ||
             (
                 !activeLink &&

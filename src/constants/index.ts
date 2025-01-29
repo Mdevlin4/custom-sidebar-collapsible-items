@@ -179,7 +179,7 @@ export const ITEM_OPTIONS_VARIABLES_MAP: [ItemColorConfigKeys, string][] = [
     ['list_children_background',            CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_BACKGROUND],
     ['list_children_color',                 CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_COLOR],
     ['list_children_indent_size',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_CHILDREN_INDENT_SIZE],
-    ['list_animation_duration',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_ANIMATION_DURATION],
+    ['list_animation_duration',           CUSTOM_SIDEBAR_CSS_VARIABLES.LIST_ANIMATION_DURATION]
 ];
 
 export const SIDEBAR_OPTIONS_VARIABLES_MAP: [SidebarColorConfigKeys, string][] = [
