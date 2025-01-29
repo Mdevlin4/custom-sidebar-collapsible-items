@@ -881,17 +881,26 @@ class CustomSidebar {
             .map((item: ConfigOrder): ConfigOrderWithItem => this._getConfigOrderWithItem(item, existingElements, matched))
             .filter((item: ConfigOrderWithItem): boolean => !!item);
 
+        const unmatched = existingElements.filter((element: HTMLAnchorElement): boolean => !matched.has(element));
+
         let orderIndex = 0;
         const sidebarElements: HTMLElement[] = [];
 
+        const spacerIndex = Array.prototype.indexOf.call(paperListBox.childNodes, paperListBox.querySelector(SELECTOR.SPACER));
+
+        unmatched.forEach((element: HTMLAnchorElement): void => {
+            const item =  element.getAttribute(ATTRIBUTE.PANEL) || element.getAttribute(ATTRIBUTE.HREF)
+                          || element.querySelector<HTMLElement>(SELECTOR.ITEM_TEXT).innerText.trim().toLowerCase();
+            configItems.push(<ConfigOrderWithItem>{item, element});
+        });
+
         configItems.forEach((item) => {
             // If config explicitly sets bottom true, or if the item is after the spacer in the DOM by default (unless that element explicitly sets bottom to false)
-            if (item.bottom) {
-                item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
+            if (item.bottom === true || item.bottom === false) {
+                item.element.setAttribute(ATTRIBUTE.BOTTOM, item.bottom.toString());
             } else if (item.element) {
-                const spacerIndex = Array.prototype.indexOf.call(paperListBox.childNodes, paperListBox.querySelector(SELECTOR.SPACER));
                 const itemIndex = Array.prototype.indexOf.call(paperListBox.childNodes, item.element);
-                if (itemIndex > spacerIndex && item.bottom !== false)
+                if (itemIndex > spacerIndex && item.bottom != false)
                     item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
             } else if (!item) {
                 console.warn(`${NAMESPACE}: error processing config item to a sidebar element:`, item);
@@ -939,6 +948,7 @@ class CustomSidebar {
     private _getConfigOrderWithItem(orderItem: ConfigOrder, existingElements: HTMLAnchorElement[], matched: Set<HTMLAnchorElement>): ConfigOrderWithItem {
         if (isListItem(orderItem)) {
             const listElement = this._buildListItem(orderItem, existingElements, matched);
+            listElement.setAttribute(ATTRIBUTE.PROCESSED, 'true');
             // orderItem.children = orderItem.children.map((child: ConfigOrder): ConfigOrderWithItem => this._getConfigOrderWithItem(child, existingElements, matched));
             return {
                 ...orderItem,
@@ -946,6 +956,7 @@ class CustomSidebar {
             };
         } else if (isNewItem(orderItem)) {
             const newItem = this._buildNewItem(orderItem);
+            newItem.setAttribute(ATTRIBUTE.PROCESSED, 'true');
             return {
                 ...orderItem,
                 element: newItem
