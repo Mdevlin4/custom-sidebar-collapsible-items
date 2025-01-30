@@ -25,7 +25,8 @@ export const ATTRIBUTES = {
 export const CONFIG_FILES = {
     BASIC: 'basic',
     JS_TEMPLATES: 'js-templates',
-    JINJA_TEMPLATES: 'jinja-templates'
+    JINJA_TEMPLATES: 'jinja-templates',
+    LISTS: 'lists'
 };
 
 export const MOBILE_VIEWPORT_SIZE = {

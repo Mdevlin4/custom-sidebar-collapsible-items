@@ -188,46 +188,6 @@ class CustomSidebar {
         return a;
     }
 
-    private _collapseList(list: HTMLElement): void {
-        const topLevelElement = list.querySelector(SELECTOR.SIDEBAR_LIST_PARENT);
-        const expanderIcon = list.querySelector(SELECTOR.SIDEBAR_LIST_COLLAPSE_ICON);
-        const childrenList = <HTMLElement>list.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
-
-        expanderIcon.setAttribute('icon', 'mdi:chevron-down');
-        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, 'false');
-        childrenList.classList.remove(CLASS.SIDEBAR_LIST_EXPANDED);
-        childrenList.style.maxHeight = '0';
-        childrenList.classList.add(CLASS.SIDEBAR_LIST_COLLAPSED);
-    }
-
-    private _expandList(list: HTMLElement): void {
-        const topLevelElement = list.querySelector(SELECTOR.SIDEBAR_LIST_PARENT);
-        const expanderIcon = list.querySelector(SELECTOR.SIDEBAR_LIST_COLLAPSE_ICON);
-        const childrenList = <HTMLElement>list.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
-        // if (parseInt(childrenList.style.maxHeight) > 0 && childrenList.style.visibility !== "hidden") {
-        //     return; // Already expanded / expanding
-        // }
-
-        // childrenList.style.display = "block";
-
-        childrenList.classList.remove(CLASS.SIDEBAR_LIST_COLLAPSED);
-        childrenList.classList.add(CLASS.SIDEBAR_LIST_EXPANDED);
-        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, 'true');
-        expanderIcon.setAttribute('icon', 'mdi:chevron-up');
-
-        // If this is a nested list, we need to update the parent's max-height as well
-        const parentListChildren = <HTMLElement>list.parentElement.closest(SELECTOR.SIDEBAR_LIST_CHILDREN);
-        if (parentListChildren) {
-            parentListChildren.style.maxHeight = `${this._computeVisibleChildren(parentListChildren) *  this._sidebarItemHeight}px`;
-        }
-
-        const visibleChildren = this._computeVisibleChildren(list);
-        childrenList.style.maxHeight = `${visibleChildren * this._sidebarItemHeight}px`;
-
-        const durationCss = getComputedStyle(childrenList).transitionDuration;
-        const durationMs =  parseFloat(durationCss) * (/\ds$/.test(durationCss) ? 1000 : 1);
-        setTimeout(() => childrenList.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), durationMs * .8);
-    }
     private _buildListItem(orderItem: ConfigListItem, existingElements: HTMLAnchorElement[], matched: Set<HTMLAnchorElement>): HTMLElement {
         // Container for the list item expanded/collapse top-level element and its children
         const listItemContainer = document.createElement('div');
@@ -235,7 +195,7 @@ class CustomSidebar {
         listItemContainer.setAttribute(ATTRIBUTE.TABINDEX, '-1');
         listItemContainer.className = CLASS.SIDEBAR_LIST;
         listItemContainer.classList.add(CLASS.SIDEBAR_ITEM);
-
+        listItemContainer.setAttribute(ATTRIBUTE.SIDEBAR_LIST_ID, orderItem.item.toLowerCase());
         // Create the top-level element (i.e the label that the other links are nested under)
         const topLevelElement = document.createElement('paper-icon-item');
         const topLevelIcon = document.createElement(ELEMENT.HA_ICON);
@@ -283,32 +243,51 @@ class CustomSidebar {
                     event.preventDefault();
                     event.stopPropagation();
                 }
-                //  else if (event.key === "Tab" && !event.shiftKey) {
-                //     const focusChildren = getFocusableElements(childrenList);
-                //     if (focusChildren.length > 0) {
-                //         focusChildren[0].focus();
-                //         event.preventDefault();
-                //         event.stopPropagation();
-                //     }
-                // }
             }
-            // } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            //     const focusChildren = getFocusableElements(listItemContainer);
-            //     if (focusChildren.length > 0) {
-            //         const currentIndex = focusChildren.indexOf(<HTMLElement>event.target);
-            //         const nextIndex = currentIndex + (event.key === "ArrowDown" ? 1 : -1);
-            //         if (nextIndex >= 0 && nextIndex < focusChildren.length) {
-            //             focusChildren[nextIndex].focus();
-            //         } else {
-            //             listItemContainer.focus();
-            //         }
-            //         event.preventDefault();
-            //         event.stopPropagation();
-            //     }
-            // }
         });
 
         return listItemContainer;
+    }
+
+    private _collapseList(list: HTMLElement): void {
+        const topLevelElement = list.querySelector(SELECTOR.SIDEBAR_LIST_PARENT);
+        const expanderIcon = list.querySelector(SELECTOR.SIDEBAR_LIST_COLLAPSE_ICON);
+        const childrenList = <HTMLElement>list.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+
+        expanderIcon.setAttribute('icon', 'mdi:chevron-down');
+        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, 'false');
+        childrenList.classList.remove(CLASS.SIDEBAR_LIST_EXPANDED);
+        childrenList.style.maxHeight = '0';
+        childrenList.classList.add(CLASS.SIDEBAR_LIST_COLLAPSED);
+    }
+
+    private _expandList(list: HTMLElement): void {
+        const topLevelElement = list.querySelector(SELECTOR.SIDEBAR_LIST_PARENT);
+        const expanderIcon = list.querySelector(SELECTOR.SIDEBAR_LIST_COLLAPSE_ICON);
+        const childrenList = <HTMLElement>list.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
+        // if (parseInt(childrenList.style.maxHeight) > 0 && childrenList.style.visibility !== "hidden") {
+        //     return; // Already expanded / expanding
+        // }
+
+        // childrenList.style.display = "block";
+
+        childrenList.classList.remove(CLASS.SIDEBAR_LIST_COLLAPSED);
+        childrenList.classList.add(CLASS.SIDEBAR_LIST_EXPANDED);
+        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, 'true');
+        expanderIcon.setAttribute('icon', 'mdi:chevron-up');
+
+        // If this is a nested list, we need to update the parent's max-height as well
+        const parentListChildren = <HTMLElement>list.parentElement.closest(SELECTOR.SIDEBAR_LIST_CHILDREN);
+        if (parentListChildren) {
+            parentListChildren.style.maxHeight = `${this._computeVisibleChildren(parentListChildren) *  this._sidebarItemHeight}px`;
+        }
+
+        const visibleChildren = this._computeVisibleChildren(list);
+        childrenList.style.maxHeight = `${visibleChildren * this._sidebarItemHeight}px`;
+
+        const durationCss = getComputedStyle(childrenList).transitionDuration;
+        const durationMs =  parseFloat(durationCss) * (/\ds$/.test(durationCss) ? 1000 : 1);
+        setTimeout(() => childrenList.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), durationMs * .8);
     }
 
     private _buildListItemChildren(topLevelElement: HTMLElement, children: ConfigOrder[], existingElements: HTMLAnchorElement[], matched: Set<HTMLAnchorElement>): HTMLDivElement {
@@ -860,7 +839,6 @@ class CustomSidebar {
 
         if (element) {
             element.setAttribute(ATTRIBUTE.PROCESSED, 'true');
-            element.classList.add(CLASS.SIDEBAR_ITEM);
             if (configItem.href) {
                 element.href = configItem.href;
             }
@@ -871,7 +849,6 @@ class CustomSidebar {
 
         return element;
     }
-
 
     private processConfig(paperListBox: HTMLElement, existingElements: HTMLAnchorElement[]): HTMLElement[] {
         const { order } = this._config;
@@ -886,22 +863,23 @@ class CustomSidebar {
         let orderIndex = 0;
         const sidebarElements: HTMLElement[] = [];
 
-        const spacerIndex = Array.prototype.indexOf.call(paperListBox.childNodes, paperListBox.querySelector(SELECTOR.SPACER));
-
         unmatched.forEach((element: HTMLAnchorElement): void => {
             const item =  element.getAttribute(ATTRIBUTE.PANEL) || element.getAttribute(ATTRIBUTE.HREF)
                           || element.querySelector<HTMLElement>(SELECTOR.ITEM_TEXT).innerText.trim().toLowerCase();
+            element.classList.add(CLASS.SIDEBAR_ITEM);
             configItems.push(<ConfigOrderWithItem>{item, element});
         });
 
+        // TODO apparently expected behavior is to place the bottom items in the top unless explicitly set as bottom:true
+        // const spacerIndex = Array.prototype.indexOf.call(paperListBox.childNodes, paperListBox.querySelector(SELECTOR.SPACER));
         configItems.forEach((item) => {
             // If config explicitly sets bottom true, or if the item is after the spacer in the DOM by default (unless that element explicitly sets bottom to false)
             if (item.bottom === true || item.bottom === false) {
                 item.element.setAttribute(ATTRIBUTE.BOTTOM, item.bottom.toString());
             } else if (item.element) {
-                const itemIndex = Array.prototype.indexOf.call(paperListBox.childNodes, item.element);
-                if (itemIndex > spacerIndex && item.bottom != false)
-                    item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
+                // const itemIndex = Array.prototype.indexOf.call(paperListBox.childNodes, item.element);
+                // if (itemIndex > spacerIndex && item.bottom != false)
+                //     item.element.setAttribute(ATTRIBUTE.BOTTOM, 'true');
             } else if (!item) {
                 console.warn(`${NAMESPACE}: error processing config item to a sidebar element:`, item);
                 return;
@@ -923,9 +901,9 @@ class CustomSidebar {
                 sidebarItemA: HTMLElement,
                 sidebarItemB: HTMLElement
             ): number => {
-                if (sidebarItemA.getAttribute('bottom') && !sidebarItemB.getAttribute('bottom'))
+                if (sidebarItemA.getAttribute('bottom') === 'true' && sidebarItemB.getAttribute('bottom') !== 'true')
                     return 1;
-                else if (!sidebarItemA.getAttribute('bottom') && sidebarItemB.getAttribute('bottom'))
+                else if (sidebarItemA.getAttribute('bottom') !== 'true' && sidebarItemB.getAttribute('bottom') === 'true')
                     return -1;
                 else
                     return parseInt(sidebarItemA.getAttribute(ATTRIBUTE.ORDER)) - parseInt(sidebarItemB.getAttribute(ATTRIBUTE.ORDER));
@@ -990,30 +968,33 @@ class CustomSidebar {
             console.error('Sidebar item has no element', orderItem);
             return;
         }
+
+        const sidebarItem = isListItem(orderItem) ? orderItem.element.querySelector<HTMLElement>(SELECTOR.SIDEBAR_LIST_PARENT) : orderItem.element;
+
         if (orderItem.name) {
             this._subscribeName(
-                orderItem.element,
+                sidebarItem,
                 orderItem.name
             );
         }
 
         if (orderItem.icon) {
             this._subscribeIcon(
-                orderItem.element,
+                sidebarItem,
                 orderItem.icon
             );
         }
 
         if (orderItem.info) {
             this._subscribeInfo(
-                orderItem.element,
+                sidebarItem,
                 orderItem.info
             );
         }
 
         if (orderItem.notification) {
             this._subscribeNotification(
-                orderItem.element,
+                sidebarItem,
                 orderItem.notification
             );
         }

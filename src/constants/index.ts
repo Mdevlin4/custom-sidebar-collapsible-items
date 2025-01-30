@@ -222,6 +222,7 @@ export enum ATTRIBUTE {
     BOTTOM = 'bottom',
     ORDER = 'order',
     TABINDEX = 'tabindex',
+    SIDEBAR_LIST_ID = 'sidebar-list-id',
 }
 
 export enum EVENT {
