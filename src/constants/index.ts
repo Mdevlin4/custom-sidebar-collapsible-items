@@ -9,6 +9,7 @@ export const NAMESPACE = 'custom-sidebar';
 export const LOCAL_PATH = '/local/';
 export const CONFIG_NAME = 'sidebar-config';
 export const CONFIG_PATH = `${LOCAL_PATH}${CONFIG_NAME}`;
+export const LOCAL_STORAGE_KEY = `${NAMESPACE}`;
 export const MAX_ATTEMPTS = 100;
 export const RETRY_DELAY = 50;
 export const FLUSH_PROMISE_DELAY = 1;
@@ -149,7 +150,11 @@ export const ITEM_TEMPLATE_STRING_OPTIONS: ItemColorConfigKeys[] = [
     'notification_color_hover',
     'notification_text_color',
     'notification_text_color_selected',
-    'notification_text_color_hover'
+    'notification_text_color_hover',
+    'list_children_background',
+    'list_children_color',
+    'list_children_indent_size',
+    'list_animation_duration'
 ];
 
 export const ITEM_TEMPLATE_NUMBER_OPTIONS: ItemColorConfigKeys[] = [

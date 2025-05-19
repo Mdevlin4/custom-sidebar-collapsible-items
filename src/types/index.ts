@@ -128,6 +128,7 @@ export interface ConfigListItem extends Omit<ConfigItem, 'children' | 'collapsed
     new_item: boolean;          // Can either be omitted in the config or set to true. Throws error if set to false. Can't use existing item as a list parent.
     children: ConfigOrder[];
     collapsed: boolean;
+    remember?: boolean; // If true, the collapsed state will be remembered in local storage
 }
 
 export type ConfigOrder = ConfigItem | ConfigNewItem | ConfigListItem;

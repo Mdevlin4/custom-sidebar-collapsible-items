@@ -44,7 +44,8 @@ import {
     BLOCKED_PROPERTY,
     SIDEBAR_MODE_TO_DOCKED_SIDEBAR,
     MAX_ATTEMPTS,
-    RETRY_DELAY
+    RETRY_DELAY,
+    LOCAL_STORAGE_KEY
 } from '@constants';
 import {
     logVersionToConsole,
@@ -209,11 +210,13 @@ class CustomSidebar {
         topLevelText.innerHTML = orderItem.item;
         topLevelElement.appendChild(topLevelText);
 
+        const collapsed = this.isCollapsed(orderItem);
+
         const expanderIcon = document.createElement(ELEMENT.HA_ICON);
         expanderIcon.className = CLASS.SIDEBAR_LIST_COLLAPSE_ICON;
-        expanderIcon.setAttribute('icon', orderItem.collapsed ? 'mdi:chevron-down' : 'mdi:chevron-up');
+        expanderIcon.setAttribute('icon', collapsed ? 'mdi:chevron-down' : 'mdi:chevron-up');
         topLevelElement.appendChild(expanderIcon);
-        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, !orderItem.collapsed ? 'true' : 'false');
+        topLevelElement.setAttribute(ATTRIBUTE.ARIA_EXPANDED, !collapsed ? 'true' : 'false');
         topLevelElement.setAttribute(ATTRIBUTE.PROCESSED, 'true');
         listItemContainer.appendChild(topLevelElement);
 
@@ -221,8 +224,8 @@ class CustomSidebar {
         const listItemChildren = this._buildListItemChildren(topLevelElement, orderItem.children, existingElements, matched);
         listItemContainer.appendChild(listItemChildren);
         const childrenList = <HTMLElement>listItemContainer.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
-        childrenList.classList.add(orderItem.collapsed ? CLASS.SIDEBAR_LIST_COLLAPSED : CLASS.SIDEBAR_LIST_EXPANDED);
-        if (!orderItem.collapsed)
+        childrenList.classList.add(collapsed ? CLASS.SIDEBAR_LIST_COLLAPSED : CLASS.SIDEBAR_LIST_EXPANDED);
+        if (!collapsed)
             setTimeout(() => {
                 // Waits for DOM to settle before measuring (for example, existing sidebar items that are added as a child of this list in the config, have not been moved yet in the DOM)
                 childrenList.style.maxHeight = `${this._computeVisibleChildren(listItemContainer) * this._sidebarItemHeight}px`;
@@ -231,9 +234,9 @@ class CustomSidebar {
         const toggleListExpandedHandler = (): void => {
             const childrenList = <HTMLElement>listItemContainer.querySelector(SELECTOR.SIDEBAR_LIST_CHILDREN);
             const isOpening = childrenList.classList.contains(CLASS.SIDEBAR_LIST_COLLAPSED); // If the list is currently collapsed, we are opening it
-            // Set timeout with 0ms to allow the browser to render the display block before calculating the scrollHeight TODO
+            // Set timeout with 0ms to allow the browser to render the display block before calculating the scrollHeight
             setTimeout(() => (isOpening) ? this._expandList(listItemContainer) : this._collapseList(listItemContainer));
-
+            this.rememberCollapsedState(orderItem, !isOpening);
         };
         topLevelElement.addEventListener(EVENT.CLICK, toggleListExpandedHandler);
         listItemContainer.addEventListener(EVENT.KEYDOWN, (event: KeyboardEvent) => {
@@ -288,6 +291,24 @@ class CustomSidebar {
         const durationCss = getComputedStyle(childrenList).transitionDuration;
         const durationMs =  parseFloat(durationCss) * (/\ds$/.test(durationCss) ? 1000 : 1);
         setTimeout(() => childrenList.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), durationMs * .8);
+    }
+
+    private isCollapsed(orderItem: ConfigListItem): boolean {
+        if (orderItem.remember) {
+            const storedState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+            if (storedState && storedState[orderItem.item] !== undefined) {
+                return storedState[orderItem.item] === true;
+            }
+        }
+        return orderItem.collapsed;
+    }
+
+    private rememberCollapsedState(orderItem: ConfigListItem, isCollapsed: boolean): void {
+        if (orderItem.remember) {
+            const storedState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || {};
+            storedState[orderItem.item] = isCollapsed;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(storedState));
+        }
     }
 
     private _buildListItemChildren(topLevelElement: HTMLElement, children: ConfigOrder[], existingElements: HTMLAnchorElement[], matched: Set<HTMLAnchorElement>): HTMLDivElement {
@@ -1075,7 +1096,6 @@ class CustomSidebar {
     }
 
     private async _panelLoaded(items?: HTMLElement[]): Promise<void> {
-
         // Select the right element in the sidebar
         const panelResolver = await this._partialPanelResolver.element as PartialPanelResolver;
         const pathName = panelResolver.__route.path;
@@ -1086,8 +1106,8 @@ class CustomSidebar {
 
         const activeLink = paperListBox.querySelector<HTMLAnchorElement>(
             `
-               ${SELECTOR.SCOPE} > ${SELECTOR.ITEM}[href="${pathName}"],
-               ${SELECTOR.SCOPE} > ${SELECTOR.ITEM}[href="${pathName}/dashboard"]
+            ${SELECTOR.SCOPE} > ${SELECTOR.ITEM}[href="${pathName}"],
+            ${SELECTOR.SCOPE} > ${SELECTOR.ITEM}[href="${pathName}/dashboard"]
             `
         );
 
@@ -1135,7 +1155,6 @@ class CustomSidebar {
                 anchor.scrollIntoView({ behavior: 'instant', block: 'center' });
             }
         });
-
         this._checkProfileEditableButton();
 
     }
